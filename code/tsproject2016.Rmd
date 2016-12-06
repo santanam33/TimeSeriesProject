@@ -22,7 +22,9 @@ The portion of the data we have chosen to focus on are the review data. We are u
 ```{r echo=FALSE}
 #load(file="image.Rdata")
 library(mgcv)
+download.file("https://github.com/brent-halen/TSProject2016/blob/master/yelp.bulkfit?raw=true",destfile="yelp.bulkfit.test", method="libcurl",mode = "wb")
 yelp.bulkfit <- readRDS("yelp.bulkfit")
+download.file("https://github.com/brent-halen/TSProject2016/blob/master/yelp.bulkfit2?raw=true",destfile="yelp.bulkfit2",method="libcurl",mode = "wb")
 yelp.bulkfit2 <- readRDS("yelp.bulkfit2")
 
 ```
