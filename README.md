@@ -135,8 +135,6 @@ bc2(yelp.ts,ploty=TRUE)
 
 
 ```{r}
-
-
 #yelp.tr1 <- yelp
 #yelp.tr1$reviews = yelp.tr1$reviews^(383/1000)
 
@@ -170,10 +168,8 @@ yelp.tr.fit2
 # 
 # sigma^2 estimated as 1.021:  log likelihood = -175.85,  aic = 361.69
 
-
 yelp.tr.pred = predict(yelp.tr.fit, n.ahead=12)
 yelp.tr.pred2 = predict(yelp.tr.fit2, n.ahead=12)
-
 
 length(yelp)
 #134
@@ -188,27 +184,16 @@ Predict2 = yelp.tr.pred2$pred
 
 pred.mat = cbind(Lower,Predict,Upper)
 pred2.mat = cbind(Lower2,Predict2,Upper2)
-
-
-
-
 final.mat = pred.mat^(1000/383)
 final2.mat = pred2.mat^(1000/383)
-
 
 final.mat
 final2.mat
 
 ######decom 
 yelp.dec = decom1(yelp,fore1 =12,se1 =12)
-
-
 yelp.dec.final = yelp.dec$pred.df
-
 yelp.dec.final
-
-
-
 
 #######using forecast to make plot
 fit_ar = arima(yelp, order= c(1,2,2))
