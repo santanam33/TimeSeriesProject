@@ -123,11 +123,19 @@ bc2(yelp.ts,ploty=TRUE)
 #yelp.tr1$reviews = yelp.tr1$reviews^(383/1000)
 
 yelp.tr = yelp.ts^(383/1000)
+```
 
-bulkfit(yelp.tr)
+```{r eval=FALSE}
+yelp.bulkfit <- bulkfit(yelp.tr)
+
 # 1.0000   2.0000   2.0000 516.3467 
 yelp.bulkfit2 <- bulkfit2(yelp.tr,12)
+# 0.0000   1.0000   2.0000  0.0000  1.0000  2.0000  361.69
+```
 
+```{r}
+yelp.bulkfit
+yelp.bulkfit2
 
 yelp.tr.fit = arima(yelp.tr,order =c(1,2,2))
 yelp.tr.fit2 <- arima(yelp.tr, order = c(0,1,2),seasonal = list(order=c(0,1,2),period=12))
@@ -152,7 +160,13 @@ yelp.tr.fit2
 # 
 # sigma^2 estimated as 1.021:  log likelihood = -175.85,  aic = 361.69
 
+```
 
+The more accurate ARIMA model, the (0,1,2)(0,1,2) one, has an aic of 361.69, so we're going to model that one. The equation yields: 
+
+$$ (1-B)(1-B^12)y_t = (1 - 0.1155B - 0.2259B^2)*(1 - 0.6475*B^12 + 0.1870*B^12)*e^t$$
+
+```{r}
 yelp.tr.pred = predict(yelp.tr.fit, n.ahead=12)
 yelp.tr.pred2 = predict(yelp.tr.fit2, n.ahead=12)
 
