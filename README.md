@@ -37,4 +37,4 @@ After producing the dataset of review counts by month, we produced a visualizati
 
 ![Alt text](/assets/yelp_checkins_over_time.png?raw=true "Review Counts over Time")
 
-
+As evident in the chart, there is a strong upward trend in the number of reviews made by users over time. We have taken the liberty of specifying several key events in Yelp's history. Although not apparent at the current zoom factor, there is a cyclical component to the series. Specifically, every November, there is a sharp dip in the number of reviews made. This cycle seems to happen yearly.
