@@ -19,13 +19,20 @@ The dataset consists of 2.7M reviews and 649K tips by 687K users for 86K busines
 
 The portion of the data we have chosen to focus on are the review data. We are using reviews as a proxy measure of Yelp's popularity overtime. We are able to do this because each review contains a date in 'yyyy-mm-dd' format which enables us to measure popularity down to the granularity of a day. Because yelp has been in business since 2014, grouping reviews by day gives us `TODO: Figure out how many samples we would have` samples to build our predictive model with; however, to improve the accuracy of our predictions, we have decided to limit the granularity of time to a month.
 
+```{r echo=FALSE}
+#load(file="image.Rdata")
+library(mgcv)
+yelp.bulkfit <- readRDS("yelp.bulkfit")
+yelp.bulkfit2 <- readRDS("yelp.bulkfit2")
+
+```
 
 ```{r}
 library(ggplot2)
 library(xts)
 library(reshape2)
-
-
+library(tables)
+library(knitr)
 library(zoo)
 
 # Downloads the 'bc2.R' file.
@@ -164,7 +171,7 @@ yelp.tr.fit2
 
 The more accurate ARIMA model, the (0,1,2)(0,1,2) one, has an aic of 361.69, so we're going to model that one. The equation yields: 
 
-$$ (1-B)(1-B^12)y_t = (1 - 0.1155B - 0.2259B^2)*(1 - 0.6475*B^12 + 0.1870*B^12)*e^t$$
+$$(1-B)(1-B^12)x_t = (1 - 0.1155*B - 0.2259*B^2)*(1 - 0.6475*B^12 + 0.1870*B^12)*a_t$$
 
 ```{r}
 yelp.tr.pred = predict(yelp.tr.fit, n.ahead=12)
@@ -192,8 +199,15 @@ final.mat = pred.mat^(1000/383)
 final2.mat = pred2.mat^(1000/383)
 
 
-final.mat
-final2.mat
+kable(final.mat)
+
+kable(final2.mat)
+```
+
+
+
+
+```{r}
 
 ######decom 
 yelp.dec = decom1(yelp,fore1 =12,se1 =12)
@@ -201,7 +215,7 @@ yelp.dec = decom1(yelp,fore1 =12,se1 =12)
 
 yelp.dec.final = yelp.dec$pred.df
 
-yelp.dec.final
+kable(yelp.dec.final)
 
 
 
