@@ -33,6 +33,8 @@ FROM (
 GROUP BY rollUp.reviewDate
 ```
 
-After producing the dataset of review counts by month, we produced a visualization so that we could identify obvious trends, cycles, and seasonality.
+After producing the dataset of review counts by month, we produced a visualization using Tableau software so that we could identify obvious trends, cycles, and seasonality.
 
 ![Alt text](/assets/yelp_checkins_over_time.png?raw=true "Review Counts over Time")
+
+
