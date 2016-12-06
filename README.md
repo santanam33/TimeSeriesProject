@@ -32,3 +32,7 @@ FROM (
    ORDER BY review.date) AS rollUp
 GROUP BY rollUp.reviewDate
 ```
+
+After producing the dataset of review counts by month, we produced a visualization to see how review counts changed over time.
+
+
