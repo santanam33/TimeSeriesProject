@@ -1,4 +1,5 @@
-# Time Series Report
+
+# Introduction
 
 Since 2014, Yelp has been hosting a competition called the Yelp Dataset Challenge. Thus far, Yelp has offered 8 rounds of this competition to the general public. Since its inception, the Yelp Dataset Challenge has given the machine learning and data science communities a useful and thorough dataset in which to apply state of the art ML algorithms and advanced data analysis to. We chose this dataset because it offers highly relevant data that is granular enough to be useful in our analysis, but not too granular as to require computationally complex routines to pre-process the data.
 
@@ -38,3 +39,186 @@ After producing the dataset of review counts by month, we produced a visualizati
 ![Alt text](/assets/yelp_checkins_over_time.png?raw=true "Review Counts over Time")
 
 As evident in the chart, there is a strong upward trend in the number of reviews made by users over time. We have taken the liberty of specifying several key events in Yelp's history. Although not apparent at the current zoom factor, there is a cyclical component to the series. Specifically, every November, there is a sharp dip in the number of reviews made. This cycle seems to happen yearly.
+
+To start off our analysis, we wrote the following code to get our data into memory for processing.
+
+```{r}
+library(ggplot2)
+library(xts)
+library(reshape2)
+
+
+library(zoo)
+
+# Downloads the 'bc2.R' file.
+download.file("https://raw.githubusercontent.com/brent-halen/TSProject2016/master/bc2.R", destfile = "bc2.R", method = "libcurl")
+source("bc2.R")
+# Downloads 'decom1.R'
+download.file("https://raw.githubusercontent.com/brent-halen/TSProject2016/master/decom1.R",destfile="decom1.R", method="libcurl")
+source("decom1.R")
+# Downloads the 'bulkfit.R' file.
+download.file("https://raw.githubusercontent.com/brent-halen/TSProject2016/master/bulkfit.R",destfile="bulkfit.R",method="libcurl")
+source("bulkfit.R")
+
+# The following is an upgraded version of 'Bulkfit' designed to test seasonal ARIMA models as well as stationary. 
+# ###WARNING### 
+# This modification will cause the function to test 729 models instead of just 27. It may take a while to complete.
+bulkfit2 <- function(x,y) {
+    w <- matrix(0,nrow=729,ncol=7)
+    ii <- 0
+    
+    for(i in 0:2) {
+        for(k in 0:2) {
+            for(j in 0:2) {
+                for(I in 0:2){
+                    for(K in 0:2){
+                        for(J in 0:2){
+                            ii <- ii + 1
+                            fit <- try(arima(x,order=c(i,k,j),seasonal= list(order=c(I,K,J),period=y)))
+                            
+                            if(inherits(fit,"try-error")) {
+                                w[ii,7] <- 99999 	
+                            }
+                            else {
+                                w[ii,7] <- fit$aic
+                                w[ii,1] <- i
+                                w[ii,2] <- k	
+                                w[ii,3] <- j
+                                w[ii,4] <- I
+                                w[ii,5] <- K
+                                w[ii,6] <- J
+                            }
+                        }
+                    }     
+                }
+            }
+        }
+    }
+    
+    dimnames(w) <- list(NULL,c("ar","d","ma","seasar","seasd","seasma","AIC"))
+    xxx <- which(w[,7]==min(w[,7],na.rm=TRUE))[1]
+    return(list(res=w,min=w[xxx,])) 
+}
+
+library(forecast)
+library(MASS)
+library(quadprog)
+
+# Downloads the final file from the web site.
+link <- "https://raw.githubusercontent.com/brent-halen/TSProject2016/master/reviews.csv"
+reviews <- "reviews.csv"
+download.file(link, destfile = reviews, method = "libcurl")
+
+#yelp =  read.zoo(file = reviews, sep = "," , FUN = as.yearmon)
+
+yelp <- read.csv(file = reviews, header = TRUE)
+yelp <- as.data.frame(yelp)
+yelp_forzoo <- yelp
+yelp_forzoo$reviewDate <- as.yearmon(yelp_forzoo$reviewDate)
+yelp <- zoo(yelp_forzoo$reviews,yelp_forzoo$reviewDate)
+plot.ts(yelp)
+yelp.ts <- as.ts(yelp)
+
+```
+
+# Model Building
+
+First, we ran the 'bc2' function on the original data. 
+
+```{r}
+
+bc2(yelp.ts,ploty=TRUE)
+#bc2(yelp.zoo,ploty=TRUE)
+#0.3838384
+
+```
+
+
+```{r}
+
+
+#yelp.tr1 <- yelp
+#yelp.tr1$reviews = yelp.tr1$reviews^(383/1000)
+
+yelp.tr = yelp.ts^(383/1000)
+
+bulkfit(yelp.tr)
+# 1.0000   2.0000   2.0000 516.3467 
+yelp.bulkfit2 <- bulkfit2(yelp.tr,12)
+
+
+yelp.tr.fit = arima(yelp.tr,order =c(1,2,2))
+yelp.tr.fit2 <- arima(yelp.tr, order = c(0,1,2),seasonal = list(order=c(0,1,2),period=12))
+
+yelp.tr.fit
+#Coefficients:
+#         ar1      ma1     ma2
+#      0.5384  -1.9144  0.9144
+#s.e.   0.1318   0.1004  0.0993
+
+#sigma^2 estimated as 2.596:  log likelihood = -254.17,  aic = 516.35
+
+yelp.tr.fit2
+
+# Call:
+# arima(x = yelp.tr, order = c(0, 1, 2), seasonal = list(order = c(0, 1, 2), period = 12))
+# 
+# Coefficients:
+#           ma1      ma2     sma1    sma2
+#       -0.1155  -0.2259  -0.6475  0.1870
+# s.e.   0.0907   0.0884   0.1093  0.1181
+# 
+# sigma^2 estimated as 1.021:  log likelihood = -175.85,  aic = 361.69
+
+
+yelp.tr.pred = predict(yelp.tr.fit, n.ahead=12)
+yelp.tr.pred2 = predict(yelp.tr.fit2, n.ahead=12)
+
+
+length(yelp)
+#134
+
+Lower = yelp.tr.pred$pred - 1.96*yelp.tr.pred$se/sqrt(134)
+Lower2 = yelp.tr.pred2$pred - 1.96*yelp.tr.pred2$se/sqrt(134)
+Upper = yelp.tr.pred$pred + 1.96*yelp.tr.pred$se/sqrt(134)
+Upper2 = yelp.tr.pred2$pred + 1.96*yelp.tr.pred2$se/sqrt(134)
+
+Predict = yelp.tr.pred$pred
+Predict2 = yelp.tr.pred2$pred
+
+pred.mat = cbind(Lower,Predict,Upper)
+pred2.mat = cbind(Lower2,Predict2,Upper2)
+
+
+
+
+final.mat = pred.mat^(1000/383)
+final2.mat = pred2.mat^(1000/383)
+
+
+final.mat
+final2.mat
+
+######decom 
+yelp.dec = decom1(yelp,fore1 =12,se1 =12)
+
+
+yelp.dec.final = yelp.dec$pred.df
+
+yelp.dec.final
+
+
+
+
+#######using forecast to make plot
+fit_ar = arima(yelp, order= c(1,2,2))
+fit_ar2 = arima(yelp, order = c(0,1,2),seasonal = list(order=c(0,1,2),period=12))
+
+fit_ar_f = forecast(fit_ar, h =12)
+fit_ar_f2 = forecast(fit_ar2,h=12)
+
+plot(fit_ar_f, include =100)
+plot(fit_ar_f2,include=100)
+
+```
+
