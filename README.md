@@ -4,9 +4,9 @@ Since 2014, Yelp has been hosting a competition called the Yelp Dataset Challeng
 
 The dataset consists of 2.7M reviews and 649K tips by 687K users for 86K businesses. Furthermore, there are a total of 566K attributes that can be applied to a business. In addition to data that is core to Yelp’s business, the dataset also includes associations between the users creating a graph network of approximately 4.2M edges. All of the data is represented in json form stored in text files and takes up about 2.5GB on disk.
 
-The portion of the data we have chosen to focus on are the review data. We are using reviews as a proxy measure of Yelp’s popularity overtime. We are able to do this because each review contains a date in ‘yyyy-mm-dd’ format which enables us to measure popularity down to the granularity of a day. Because yelp has been in business since 2014, grouping reviews by day gives us TODO: Figure out how many samples we would have samples to build our predictive model with; however, to improve the    accuracy of our predictions, we have decided to limit the granularity of time to a month.
+The portion of the data we have chosen to focus on are the review data. We are using reviews as a proxy measure of Yelp’s popularity overtime. We are able to do this because each review contains a date in ‘yyyy-mm-dd’ format which enables us to measure popularity down to the granularity of a day. Because yelp has been in business since 2014, grouping reviews by day gives us TODO: Figure out how many samples we would have samples to build our predictive model with; however, to improve the  accuracy of our predictions, we have decided to limit the granularity of time to a month.
 
-```json
+```
 {
     'type': 'review',
     'business_id': (encrypted business id),
