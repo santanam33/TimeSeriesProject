@@ -127,7 +127,7 @@ yelp.ts <- as.ts(yelp)
 
 # Model Building
 
-First, we ran the 'bc2' function on the original data. 
+First, we ran applied the function `bc2` to the data. 
 
 ```{r}
 
