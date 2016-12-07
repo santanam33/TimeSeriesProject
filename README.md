@@ -40,7 +40,9 @@ After producing the dataset of review counts by month, we produced a visualizati
 
 ![Alt text](/assets/yelp_checkins_raw.png?raw=true "Review Counts over Time")
 
-As evident in the chart, there is a strong upward trend in the number of reviews made by users over time. We have taken the liberty of specifying several key events in Yelp's history that helped contribute to their success. There is a cyclical component to the series, highlighted by the lower graph. Specifically, every November, there is a sharp dip in the number of reviews made. This cycle seems to happen yearly.
+As evident in the chart, there is a strong upward trend in the number of reviews made by users over time. We have taken the liberty of specifying several key events in Yelp's history that helped contribute to their success, especially related to advances in mobile technology and search engine technology.  The releases of the iPhone and Android greatly increased Yelp's accessibility by users, and by the first quarter of 2013, smartphones had a 65% marketshare of the mobile market.  Also, the release of Google Pigeon in 2014 gave preference to local listings in Google searches, which also greatly increased Yelp's visibility, making 2014 the first profitable year in the company's existence.
+
+In regards to the time series, there is a cyclical component to the series, highlighted by the lower graph. Specifically, every November, there is a sharp dip in the number of reviews made. This cycle seems to happen yearly, and could be demonstrative of users' tendencies to eat out less during these times.
 
 To start off our analysis, we wrote the following code to get our data into memory for processing.
 
