@@ -38,9 +38,9 @@ GROUP BY rollUp.reviewDate
 
 After producing the dataset of review counts by month, we produced a visualization using Tableau software so that we could identify obvious trends, cycles, and seasonality.
 
-![Alt text](/assets/yelp_checkins_over_time.png?raw=true "Review Counts over Time")
+![Alt text](/assets/yelp_checkins_raw.png?raw=true "Review Counts over Time")
 
-As evident in the chart, there is a strong upward trend in the number of reviews made by users over time. We have taken the liberty of specifying several key events in Yelp's history. Although not apparent at the current zoom factor, there is a cyclical component to the series. Specifically, every November, there is a sharp dip in the number of reviews made. This cycle seems to happen yearly.
+As evident in the chart, there is a strong upward trend in the number of reviews made by users over time. We have taken the liberty of specifying several key events in Yelp's history that helped contribute to their success. There is a cyclical component to the series, highlighted by the lower graph. Specifically, every November, there is a sharp dip in the number of reviews made. This cycle seems to happen yearly.
 
 To start off our analysis, we wrote the following code to get our data into memory for processing.
 
