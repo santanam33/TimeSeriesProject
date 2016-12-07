@@ -22,7 +22,7 @@ The portion of the data we have chosen to focus on are the review data. We are u
 ```{r echo=FALSE}
 #load(file="image.Rdata")
 library(mgcv)
-download.file("https://github.com/brent-halen/TSProject2016/blob/master/yelp.bulkfit?raw=true",destfile="yelp.bulkfit.test", method="libcurl",mode = "wb")
+download.file("https://github.com/brent-halen/TSProject2016/blob/master/yelp.bulkfit?raw=true",destfile="yelp.bulkfit", method="libcurl",mode = "wb")
 yelp.bulkfit <- readRDS("yelp.bulkfit")
 download.file("https://github.com/brent-halen/TSProject2016/blob/master/yelp.bulkfit2?raw=true",destfile="yelp.bulkfit2",method="libcurl",mode = "wb")
 yelp.bulkfit2 <- readRDS("yelp.bulkfit2")
@@ -124,6 +124,7 @@ bc2(yelp.ts,ploty=TRUE)
 
 ```
 
+This returns a value of 0.3838384, so we're goign to raise it to 383/1000.
 
 ```{r}
 
@@ -134,20 +135,30 @@ bc2(yelp.ts,ploty=TRUE)
 yelp.tr = yelp.ts^(383/1000)
 ```
 
+## Non-Seasonal ARIMA
+
+### Bulkfit
+
+First, we're going to use bulkfit to find a non-seasonal ARIMA model. 
+
 ```{r eval=FALSE}
 yelp.bulkfit <- bulkfit(yelp.tr)
 
 # 1.0000   2.0000   2.0000 516.3467 
-yelp.bulkfit2 <- bulkfit2(yelp.tr,12)
-# 0.0000   1.0000   2.0000  0.0000  1.0000  2.0000  361.69
+
 ```
+
+
 
 ```{r}
 yelp.bulkfit
-yelp.bulkfit2
+```
 
-yelp.tr.fit = arima(yelp.tr,order =c(1,2,2))
-yelp.tr.fit2 <- arima(yelp.tr, order = c(0,1,2),seasonal = list(order=c(0,1,2),period=12))
+
+### Deriving the model
+
+```{r}
+yelp.tr.fit <- arima(yelp.tr,order =c(1,2,2))
 
 yelp.tr.fit
 #Coefficients:
@@ -156,6 +167,58 @@ yelp.tr.fit
 #s.e.   0.1318   0.1004  0.0993
 
 #sigma^2 estimated as 2.596:  log likelihood = -254.17,  aic = 516.35
+
+
+```
+
+The most accurate seasonal ARIMA model (the (1,2,2) one) has an aic of 516.35, so we're going to model that one. The equation yields: 
+
+$$(1-0.5384*B)(1-B-B^2)x_t = (1 - 1.9144*B + 0.9144*B^2)*a_t$$
+
+### Making Predictions
+
+```{r}
+yelp.tr.pred = predict(yelp.tr.fit, n.ahead=6)
+
+length(yelp)
+#134
+
+Lower = yelp.tr.pred$pred - 1.96*yelp.tr.pred$se/sqrt(134)
+Upper = yelp.tr.pred$pred + 1.96*yelp.tr.pred$se/sqrt(134)
+Predict = yelp.tr.pred$pred
+pred.mat = cbind(Lower,Predict,Upper)
+final.mat = pred.mat^(1000/383)
+kable(final.mat)
+
+
+```
+
+### Plotting our ARIMA model
+
+
+```{r}
+fit_ar = arima(yelp, order= c(1,2,2))
+fit_ar_f = forecast(fit_ar, h =6)
+plot(fit_ar_f, include =100)
+```
+
+
+
+## Seasonal ARIMA
+
+```{r eval = FALSE}
+yelp.bulkfit2 <- bulkfit2(yelp.tr,12)
+# 0.0000   1.0000   2.0000  0.0000  1.0000  2.0000  361.69
+```
+
+
+```{r}
+
+yelp.bulkfit2
+
+
+yelp.tr.fit2 <- arima(yelp.tr, order = c(0,1,2),seasonal = list(order=c(0,1,2),period=12))
+
 
 yelp.tr.fit2
 
@@ -171,41 +234,34 @@ yelp.tr.fit2
 
 ```
 
-The more accurate ARIMA model, the (0,1,2)(0,1,2) one, has an aic of 361.69, so we're going to model that one. The equation yields: 
+The most accurate seasonal ARIMA model (the (0,1,2)(0,1,2)[12] one) has an aic of 361.69, so we're going to model that one. The equation yields: 
 
 $$(1-B)(1-B^12)x_t = (1 - 0.1155*B - 0.2259*B^2)*(1 - 0.6475*B^12 + 0.1870*B^12)*a_t$$
 
 ```{r}
-yelp.tr.pred = predict(yelp.tr.fit, n.ahead=12)
-yelp.tr.pred2 = predict(yelp.tr.fit2, n.ahead=12)
 
-
-length(yelp)
-#134
-
-Lower = yelp.tr.pred$pred - 1.96*yelp.tr.pred$se/sqrt(134)
+yelp.tr.pred2 = predict(yelp.tr.fit2, n.ahead=6)
 Lower2 = yelp.tr.pred2$pred - 1.96*yelp.tr.pred2$se/sqrt(134)
-Upper = yelp.tr.pred$pred + 1.96*yelp.tr.pred$se/sqrt(134)
 Upper2 = yelp.tr.pred2$pred + 1.96*yelp.tr.pred2$se/sqrt(134)
-
-Predict = yelp.tr.pred$pred
 Predict2 = yelp.tr.pred2$pred
-
-pred.mat = cbind(Lower,Predict,Upper)
 pred2.mat = cbind(Lower2,Predict2,Upper2)
-
-
-
-
-final.mat = pred.mat^(1000/383)
 final2.mat = pred2.mat^(1000/383)
-
-
-kable(final.mat)
-
 kable(final2.mat)
 ```
 
+
+
+### Plotting
+
+```{r}
+fit_ar2 = arima(yelp, order = c(0,1,2),seasonal = list(order=c(0,1,2),period=12))
+
+
+fit_ar_f2 = forecast(fit_ar2,h=6)
+
+
+plot(fit_ar_f2,include=100)
+```
 
 
 
@@ -223,14 +279,10 @@ kable(yelp.dec.final)
 
 
 #######using forecast to make plot
-fit_ar = arima(yelp, order= c(1,2,2))
-fit_ar2 = arima(yelp, order = c(0,1,2),seasonal = list(order=c(0,1,2),period=12))
 
-fit_ar_f = forecast(fit_ar, h =12)
-fit_ar_f2 = forecast(fit_ar2,h=12)
 
-plot(fit_ar_f, include =100)
-plot(fit_ar_f2,include=100)
+
+
 
 ```
 
